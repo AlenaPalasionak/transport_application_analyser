@@ -6,10 +6,10 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class Config {
-    private static final File PROPS = new File("file.properties");
-    private static  Properties PROPERTIES;
+    private static final File PROPS = new File("F:\\1_Programming\\Just_coding\\2024_intellij\\transport_aplication_analyser\\config\\file.properties");
+    private static final Properties PROPERTIES = new Properties();
 
-    public static Properties getProperties(String key) {
+    public static Properties getProperties() {
         if (PROPERTIES.isEmpty()) {
             try {
                 PROPERTIES.load(new FileReader(PROPS));

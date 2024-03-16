@@ -11,7 +11,7 @@ import java.time.Duration;
 import java.util.List;
 
 public class WaitUtil {
-    private static final int BROWSER_WAIT_VALUE = Config.getProperties("wait");
+    private static final int BROWSER_WAIT_VALUE = Integer.parseInt(String.valueOf(Config.getProperties().getProperty("wait")));
 
     public WebDriverWait getWait() {
         return new WebDriverWait(BrowserUtil.getDriver(), Duration.ofSeconds(BROWSER_WAIT_VALUE));

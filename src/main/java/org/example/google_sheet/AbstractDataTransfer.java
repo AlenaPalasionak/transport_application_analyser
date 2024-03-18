@@ -14,15 +14,18 @@ import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.UpdateValuesResponse;
 import com.google.api.services.sheets.v4.model.ValueRange;
-import org.example.file_handler.Constants;
+import org.example.model.Transportation;
+import org.example.util.FileHandler;
 
 import java.io.*;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
 import java.util.List;
 
-public abstract class AbstractGoogleSheetHandler {
-    protected String spreadsheetId;
+public abstract class AbstractDataTransfer {
+
+    protected final File storageDir;
+    protected final String spreadsheetId;
     private String EMPTY_ROW_NUMBER;
     private static final String L1_L_RANGE = "Sheet1!L1:L";
     private static final String APPLICATION_NAME = "Google Sheets API";
@@ -40,64 +43,65 @@ public abstract class AbstractGoogleSheetHandler {
             throw new RuntimeException(e);
         }
     }
-//    public String getEMPTY_ROW_NUMBER() {
-//        return EMPTY_ROW_NUMBER;
-//    }
 
-    public abstract String getSpreadsheetId();
-    public abstract String getDirPath();
+    public AbstractDataTransfer(File storageDir, String spreadsheetId) {
+        this.storageDir = storageDir;
+        this.spreadsheetId = spreadsheetId;
+    }
+
+    public String getSpreadsheetId() {
+        return spreadsheetId;
+    }
+
+    public File getStorageDir() {
+        return storageDir;
+    }
 
     public int getLastNumber() {
-        ValueRange response = null;
+        ValueRange numerationRageResponse = null;
         try {
-            response = getService().spreadsheets().values()
+            numerationRageResponse = getService().spreadsheets().values()
                     .get(getSpreadsheetId(), L1_L_RANGE)
                     .execute();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        List<List<Object>> rows = response.getValues();
-        final int sheetValueSize = rows.size();
-        EMPTY_ROW_NUMBER = String.format("A%s", sheetValueSize + 1);
-        return Integer.parseInt(String.valueOf(rows.get(rows.size() - 1).get(0)));
+        List<List<Object>> numerationRowsList = numerationRageResponse.getValues();
+        final int numerationRowsListSize = numerationRowsList.size();
+        EMPTY_ROW_NUMBER = String.format("A%s", numerationRowsListSize + 1);
+        List<Object> lastRowList = numerationRowsList.get(numerationRowsList.size() - 1);
+        Object lastCellValue = lastRowList.get(0);
+        return Integer.parseInt(String.valueOf(lastCellValue));
     }
 
-//    public void addValue(String client, String price, String career) throws
-//            IOException, GeneralSecurityException {
-//        ValueRange body = new ValueRange()
-//                .setValues(List.of(
-//                        List.of(client, ""
-//                                , "", career, price
-//                                , "", "", "", "", "", "", getLastNumber() + 1)));
-//        UpdateValuesResponse res = getService().spreadsheets().values()
-//                .update(getSpreadsheetId(), EMPTY_ROW_NUMBER, body)
-//                .setValueInputOption("RAW")
-//                .execute();
-//    }
-
-    public void addValueToSheet(List<List<String>> data) {
+    public void addValueToSheet() {
         String carrierName;
         String clientName;
         String date;
         String price;
-        for (List<String> fileData : data) {
-            carrierName = fileData.get(0);
-            clientName = fileData.get(2);
-            date = fileData.get(1);
-            price = fileData.get(3);
+        List<Transportation> transportationList = FileHandler.getTransportationDataList(getStorageDir());
+        for (Transportation tr : transportationList) {
+            carrierName = tr.getCarrierName();
+            clientName = tr.getClientName();
+            date = tr.getDate();
+            price = tr.getPrice();
             ValueRange body = new ValueRange()
                     .setValues(List.of(
                             List.of(clientName, ""
                                     , "", carrierName, price
                                     , "", "", "", date, "", "", getLastNumber() + 1)));
-            try {
-                UpdateValuesResponse res = getService().spreadsheets().values()
-                        .update(getSpreadsheetId(), EMPTY_ROW_NUMBER, body)
-                        .setValueInputOption("RAW")
-                        .execute();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            update(body);
+        }
+    }
+
+    private void update(ValueRange body) {
+        try {
+            UpdateValuesResponse res = getService().spreadsheets().values()
+                    .update(getSpreadsheetId(), EMPTY_ROW_NUMBER, body)
+                    .setValueInputOption("RAW")
+                    .execute();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -125,7 +129,4 @@ public abstract class AbstractGoogleSheetHandler {
         LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
         return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
     }
-
-
-
 }

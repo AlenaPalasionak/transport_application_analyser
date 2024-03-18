@@ -1,8 +1,8 @@
 package org.example.model;
 
 public class AccountantBook {
-    private  String carrierName;
-    private  String clientName;
-    private  String date;
-    private  String price;
+    private  String carrierNameRow;
+    private  String clientNameRow;
+    private  String dateRow;
+    private  String priceRow;
 }

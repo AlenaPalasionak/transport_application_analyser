@@ -1,4 +1,4 @@
-package org.example.file_handler;
+package org.example.resources;
 
 public class Constants {
     public static final int CARRIER = 0;

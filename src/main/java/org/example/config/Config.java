@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class Config {
-    private static final File PROPS = new File("F:\\1_Programming\\Just_coding\\2024_intellij\\transport_aplication_analyser\\config\\file.properties");
+    private static final File PROPS = new File("config\\file.properties");
     private static final Properties PROPERTIES = new Properties();
 
     public static Properties getProperties() {

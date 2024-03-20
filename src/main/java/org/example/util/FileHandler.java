@@ -1,6 +1,6 @@
 package org.example.util;
 
-import org.example.file_handler.Constants;
+import org.example.resources.Constants;
 import org.example.model.Transportation;
 
 import java.io.File;
@@ -11,25 +11,24 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public abstract class FileHandler {
-    static List<File> filelist;
+public class FileHandler {
 
-    /**
-     * @param storageDir directory where application should get List of Files
-     *                   *                   every file name is processed and split according to
-     *                   *                   the regex
-     * @return Transportation data from file name as a List
-     */
+    private static String dialogueMessage;
+
+    public static String getDialogueMessage() {
+        return dialogueMessage;
+    }
+
     public static List<Transportation> getTransportationDataList(File storageDir) {
         List<File> fileList = FileHandler.getFileList(storageDir);
         List<Transportation> transportationList = new ArrayList<>();
         for (File file : fileList) {
             String[] fileNamePart = file.getName().split("=");
-            FileHandler.markAsWritten(file,storageDir);
+            FileHandler.markAsWritten(file, storageDir);
             Transportation transportation = new Transportation(fileNamePart[Constants.CARRIER]
-                            , fileNamePart[Constants.CLIENT]
-                            , fileNamePart[Constants.DATE]
-                            , fileNamePart[Constants.PRICE]);
+                    , fileNamePart[Constants.CLIENT]
+                    , fileNamePart[Constants.DATE]
+                    , fileNamePart[Constants.PRICE]);
             transportationList.add(transportation);
         }
         return transportationList;
@@ -41,7 +40,7 @@ public abstract class FileHandler {
      * and which should be added there
      */
     public static List<File> getFileList(File storageDir) {
-        filelist = Arrays.asList(Objects.requireNonNull((storageDir).listFiles()));
+        List<File> filelist = Arrays.asList(Objects.requireNonNull((storageDir).listFiles()));
         return filelist.stream().filter(f -> !f.getName().contains("+"))
                 .collect(Collectors.toList());
     }
@@ -53,15 +52,10 @@ public abstract class FileHandler {
         String newFileName = storageDir + "\\"
                 + fileName.substring(0, at) + input + fileName.substring(at);
         boolean flag = file.renameTo(new File(newFileName));
-        // if renameTo() return true then if block is
-        // executed
         if (flag) {
-            System.out.println("File Successfully Rename");
-        }
-        // if renameTo() return false then else block is
-        // executed
-        else {
-            System.out.println("Operation Failed");
+            System.out.println("file(s)  successfully renamed");
+        } else {
+            System.out.println("Files are NOT renamed ");
         }
     }
 }

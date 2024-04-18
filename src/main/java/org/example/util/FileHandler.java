@@ -22,16 +22,16 @@ public class FileHandler {
                     Нет файлов для записи. Если новые файлы были созданы, возможно вы забыли убрать знак "+",
                     который помечает их как "уже добавленные в список"
                     """);
-        }
-        for (File file : fileList) {
-            String[] transportationDataItems = file.getName().split("=");
-            if (!(transportationDataItems.length == FileNamePart.NUMBER_OF_ITEMS)) {
-                JOptionPane.showMessageDialog(null, """
-                        Имя файла записано с ошибкой.
-                        Проверьте наличие знаков "=" между данными о перевозке.
-                        """);
-            } else {
-                FileHandler.markAsWritten(file, storageDir);
+        } else {
+            for (File file : fileList) {
+                String[] transportationDataItems = file.getName().split("=");
+                if (!(transportationDataItems.length == FileNamePart.NUMBER_OF_ITEMS)) {
+                    JOptionPane.showMessageDialog(null, """
+                            Имя файла записано с ошибкой.
+                            Проверьте наличие знаков "=" между данными о перевозке.
+                            """);
+                }
+                //   FileHandler.markAsWritten(file, storageDir); хочу убрать отсюда переименовывание файлов
                 Transportation transportation = new Transportation(transportationDataItems[FileNamePart.CARRIER]
                         , transportationDataItems[FileNamePart.CLIENT]
                         , transportationDataItems[FileNamePart.DATE]
@@ -43,18 +43,13 @@ public class FileHandler {
         return transportationList;
     }
 
-    /**
-     * @param storageDir directory where application should get List of Files
-     * @return List og Files from defined directory, which are still not in the accountant book
-     * and which should be added there
-     */
     private static List<File> getFileList(File storageDir) {
         List<File> fileList = Arrays.asList(Objects.requireNonNull((storageDir).listFiles()));
         return fileList.stream().filter(f -> !f.getName().contains("+"))
                 .collect(Collectors.toList());
     }
 
-    private static void markAsWritten(File file, File storageDir) {
+    public static void markAsWritten(File file, File storageDir) {
         String fileName = file.getName();
         String input = "+";
         int at = fileName.indexOf("=");
@@ -64,11 +59,12 @@ public class FileHandler {
         if (flag) {
             Log.info("Файл переименован получил метку \"+\" (добавлен в список)");
         } else {
-            JOptionPane.showMessageDialog(null, """
-                    Файл попал в список, но НЕ получил метку "+" (добавлен в список).
-                    Возможная причина: имя файла совпадает с ранее существующим в папке.
-                    Зайдите в папку и поставьте + вручную. Также поставьте отличительный знак, чтобы имена файлов не совпадали
-                    """);
+            JOptionPane.showMessageDialog(null,
+                    "Файл: " + fileName + """
+                            \nпопал в список, но НЕ получил метку "+" (добавлен в список в интернете).
+                            Возможная причина: имя файла совпадает с ранее существующим в папке.
+                            Зайдите в папку заявок и поставьте + вручную. Также поставьте отличительный знак, чтобы имена файлов не совпадали.
+                            """);
         }
     }
 }

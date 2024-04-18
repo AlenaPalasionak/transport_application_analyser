@@ -10,18 +10,18 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class AppForm extends JFrame {
+public class AppWindow extends JFrame {
 
     private final JRadioButton entrepreneurButton = new JRadioButton("ИП");
     private final JRadioButton companyButton = new JRadioButton("ЧТУП", true);
-    private final String[] monthsNames = {"апрель", "май", "июнь", "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь"};
+    private final String[] monthsNames = {"январь", "февраль", "март", "апрель", "май", "июнь", "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь"};
     private final JComboBox<String> comboBox = new JComboBox<>(monthsNames);
     private AbstractDataTransferor dataTransferor;
 
-    public AppForm() throws HeadlessException {
+    public AppWindow() throws HeadlessException {
         super("\"Заполните данные\"");
         this.setSize(300, 300);
-        this.setLocation(500, 200);
+        this.setLocation(900, 200);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         Container container = this.getContentPane();
         container.setLayout(new GridLayout(4, 2, 2, 2));
@@ -41,7 +41,7 @@ public class AppForm extends JFrame {
         panel3.add(sendButton);
         ButtonEventManager eventListener = new ButtonEventManager("Запущен процесс создание списка.");
         sendButton.addActionListener(eventListener);
-        Log.info("Object AppForm (the descendant of JFrame) is created");
+        Log.info("Object AppWindow is created");
     }
 
     class ButtonEventManager implements ActionListener {
@@ -49,7 +49,6 @@ public class AppForm extends JFrame {
 
         public ButtonEventManager(String message) {
             this.message = message;
-            Log.info("Constructor BaseEventListener completed");
         }
 
         public void actionPerformed(ActionEvent e) {

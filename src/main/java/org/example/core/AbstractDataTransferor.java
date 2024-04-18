@@ -18,6 +18,7 @@ import org.example.Main;
 import org.example.model.Transportation;
 import org.example.util.FileHandler;
 
+import javax.swing.*;
 import java.io.*;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
@@ -58,6 +59,10 @@ public abstract class AbstractDataTransferor {
                     .get(getSpreadsheetId(), rangeOfSheet)
                     .execute();
         } catch (IOException e) {
+            JOptionPane.showMessageDialog(null, """
+                            Произошла ошибка, возможно не верно указан месяц
+                            или названия столбцов таблицы неправильно заполнены.
+                            """);
             throw new RuntimeException(e);
         }
         List<List<Object>> numerationRowsList = numerationRageResponse.getValues();
@@ -107,6 +112,7 @@ public abstract class AbstractDataTransferor {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+     //   FileHandler.markAsWritten(FileHandler.fileList); хотчу вставить сюда переимоновывание файлов в папке
     }
 
     private static Sheets getService() throws IOException {

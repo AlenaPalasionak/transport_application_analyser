@@ -12,7 +12,6 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
-import com.google.api.services.sheets.v4.model.UpdateValuesResponse;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import org.example.Main;
 import org.example.model.Transportation;
@@ -51,18 +50,38 @@ public abstract class AbstractDataTransferor {
         this.spreadsheetId = spreadsheetId;
     }
 
-    public int getLastNumber(String sheetName) {
+    public void addValueToSheet(String sheetName) {
+        List<Transportation> transportationList = FileHandler.getNewTransportationsList(storageDir);
+        for (Transportation tr : transportationList) {
+            String carrierName = tr.getCarrierName();
+            String clientName = tr.getClientName();
+            String date = tr.getDate();
+            String price = tr.getPrice();
+            String driver = tr.getDriver();
+            ValueRange body = new ValueRange()
+                    .setValues(List.of(
+                            List.of(clientName, ""
+                                    , carrierName, driver, price
+                                    , date, "", getLastNumber(sheetName) + 1)));
+            update(body);
+        }
+        FileHandler.markAsWritten(storageDir);
+    }
+
+    private int getLastNumber(String sheetName) {
         ValueRange numerationRageResponse;
         String rangeOfSheet = sheetName + H1_H_RANGE;
         try {
             numerationRageResponse = getService().spreadsheets().values()
-                    .get(getSpreadsheetId(), rangeOfSheet)
+                    .get(spreadsheetId, rangeOfSheet)
                     .execute();
         } catch (IOException e) {
             JOptionPane.showMessageDialog(null, """
-                            Произошла ошибка, возможно не верно указан месяц
-                            или названия столбцов таблицы неправильно заполнены.
-                            """);
+                    Произошла ошибка.
+                    Неверно указан МЕСЯЦ
+                    или
+                    названия столбцов таблицы в google списке заполнены неверно.
+                    """);
             throw new RuntimeException(e);
         }
         List<List<Object>> numerationRowsList = numerationRageResponse.getValues();
@@ -78,41 +97,15 @@ public abstract class AbstractDataTransferor {
         }
     }
 
-    public void addValueToSheet(String sheetName) {
-        List<Transportation> transportationList = FileHandler.getTransportationDataList(getStorageDir());
-        for (Transportation tr : transportationList) {
-            String carrierName = tr.getCarrierName();
-            String clientName = tr.getClientName();
-            String date = tr.getDate();
-            String price = tr.getPrice();
-            String driver = tr.getDriver();
-            ValueRange body = new ValueRange()
-                    .setValues(List.of(
-                            List.of(clientName, ""
-                                    , carrierName, driver, price
-                                    , date, "", getLastNumber(sheetName) + 1)));
-            update(body);
-        }
-    }
-
-    private String getSpreadsheetId() {
-        return spreadsheetId;
-    }
-
-    private File getStorageDir() {
-        return storageDir;
-    }
-
     private void update(ValueRange body) {
         try {
-            UpdateValuesResponse res = getService().spreadsheets().values()
-                    .update(getSpreadsheetId(), EMPTY_ROW_NUMBER, body)
+            getService().spreadsheets().values()
+                    .update(spreadsheetId, EMPTY_ROW_NUMBER, body)
                     .setValueInputOption("RAW")
                     .execute();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-     //   FileHandler.markAsWritten(FileHandler.fileList); хотчу вставить сюда переимоновывание файлов в папке
     }
 
     private static Sheets getService() throws IOException {

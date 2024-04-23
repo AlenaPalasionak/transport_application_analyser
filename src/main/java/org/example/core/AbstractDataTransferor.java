@@ -16,6 +16,7 @@ import com.google.api.services.sheets.v4.model.ValueRange;
 import org.example.Main;
 import org.example.model.Transportation;
 import org.example.util.FileHandler;
+import org.example.util.logger.Log;
 
 import javax.swing.*;
 import java.io.*;
@@ -39,18 +40,25 @@ public abstract class AbstractDataTransferor {
 
     static {
         try {
+            Log.info("(AbstractDataTransferor) 1 are gonna initialise HTTP_TRANSPORT");
             HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+
         } catch (GeneralSecurityException | IOException e) {
+            Log.info("(AbstractDataTransferor)  2  was gonna initialise HTTP_TRANSPORT but throwed new RuntimeException(e)");
+
             throw new RuntimeException(e);
         }
+        Log.info("(AbstractDataTransferor) 2.2 HTTP_TRANSPORT is initialised ");
     }
 
     public AbstractDataTransferor(File storageDir, String spreadsheetId) {
+        Log.info("(AbstractDataTransferor) 2.3 AbstractDataTransferor constructor is invoked ");
         this.storageDir = storageDir;
         this.spreadsheetId = spreadsheetId;
     }
 
     public void addValueToSheet(String sheetName) {
+        Log.info("(AbstractDataTransferor)3  are gonna addValueToSheet");
         List<Transportation> transportationList = FileHandler.getNewTransportationsList(storageDir);
         for (Transportation tr : transportationList) {
             String carrierName = tr.getCarrierName();
@@ -65,10 +73,13 @@ public abstract class AbstractDataTransferor {
                                     , date, "", getLastNumber(sheetName) + 1)));
             update(body);
         }
+        Log.info("(AbstractDataTransferor) 4 addValueToSheet worked");
         FileHandler.markAsWritten(storageDir);
+        Log.info("(AbstractDataTransferor)5  markAsWritten worked");
     }
 
     private int getLastNumber(String sheetName) {
+        Log.info("(AbstractDataTransferor) 6 are gonna getLastNumber");
         ValueRange numerationRageResponse;
         String rangeOfSheet = sheetName + H1_H_RANGE;
         try {
@@ -98,6 +109,7 @@ public abstract class AbstractDataTransferor {
     }
 
     private void update(ValueRange body) {
+        Log.info("(AbstractDataTransferor)7  are gonna update");
         try {
             getService().spreadsheets().values()
                     .update(spreadsheetId, EMPTY_ROW_NUMBER, body)
@@ -106,9 +118,11 @@ public abstract class AbstractDataTransferor {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        Log.info("(AbstractDataTransferor)  8 updated");
     }
 
     private static Sheets getService() throws IOException {
+        Log.info("(AbstractDataTransferor) 9 are gonna get Sheets (method getService");
         return new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials())
                 .setApplicationName(APPLICATION_NAME)
                 .build();
@@ -116,6 +130,7 @@ public abstract class AbstractDataTransferor {
 
     private static Credential getCredentials()
             throws IOException {
+        Log.info("(AbstractDataTransferor) 10 are gonna get Credential");
         InputStream in = Main.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
         if (in == null) {
             throw new FileNotFoundException("Resource not found: " + CREDENTIALS_FILE_PATH);
@@ -128,6 +143,7 @@ public abstract class AbstractDataTransferor {
                 .setAccessType("offline")
                 .build();
         LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
+        Log.info("(AbstractDataTransferor) 11 are gonna return Credential (line before return");
         return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
     }
 }

@@ -15,6 +15,7 @@ import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import org.example.Main;
 import org.example.model.Transportation;
+import org.example.project_constants.DialogPaneMessage;
 import org.example.util.FileHandler;
 import org.example.util.logger.Log;
 
@@ -28,7 +29,8 @@ import java.util.Objects;
 public abstract class AbstractDataTransferor {
     protected final File storageDir;
     protected final String spreadsheetId;
-    private String EMPTY_ROW_NUMBER;
+    private String EMPTY_ROW_NUMBER_COORDINATES;
+    public static final String NOT_TO_BE_FILLED_SELL = "";
     private static final String H1_H_RANGE = "!H1:H";
     private static final String APPLICATION_NAME = "Google Sheets API";
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
@@ -40,25 +42,23 @@ public abstract class AbstractDataTransferor {
 
     static {
         try {
-            Log.info("(AbstractDataTransferor) 1 are gonna initialise HTTP_TRANSPORT");
+            Log.info("(AbstractDataTransferor) 1.  HTTP_TRANSPORT is gonna be initialised");
             HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-
         } catch (GeneralSecurityException | IOException e) {
-            Log.info("(AbstractDataTransferor)  2  was gonna initialise HTTP_TRANSPORT but throwed new RuntimeException(e)");
-
+            Log.info("(AbstractDataTransferor)  2. HTTP_TRANSPORT was gonna be initialised but new RuntimeException was thrown "
+                    + e.getMessage());
             throw new RuntimeException(e);
         }
-        Log.info("(AbstractDataTransferor) 2.2 HTTP_TRANSPORT is initialised ");
     }
 
     public AbstractDataTransferor(File storageDir, String spreadsheetId) {
-        Log.info("(AbstractDataTransferor) 2.3 AbstractDataTransferor constructor is invoked ");
         this.storageDir = storageDir;
         this.spreadsheetId = spreadsheetId;
     }
 
-    public void addValueToSheet(String sheetName) {
-        Log.info("(AbstractDataTransferor)3  are gonna addValueToSheet");
+    public void addValueToSpreadSheets(String sheetName) {
+        Log.info("(AbstractDataTransferor) 3. Values are gonna be added to Sheet" + sheetName
+                + ". Storage directory is gonna be opened in case it exists ");
         List<Transportation> transportationList = FileHandler.getNewTransportationsList(storageDir);
         for (Transportation tr : transportationList) {
             String carrierName = tr.getCarrierName();
@@ -68,71 +68,69 @@ public abstract class AbstractDataTransferor {
             String driver = tr.getDriver();
             ValueRange body = new ValueRange()
                     .setValues(List.of(
-                            List.of(clientName, ""
+                            List.of(clientName, NOT_TO_BE_FILLED_SELL
                                     , carrierName, driver, price
-                                    , date, "", getLastNumber(sheetName) + 1)));
+                                    , date, NOT_TO_BE_FILLED_SELL, getNextNumber(sheetName))));
             update(body);
         }
-        Log.info("(AbstractDataTransferor) 4 addValueToSheet worked");
         FileHandler.markAsWritten(storageDir);
-        Log.info("(AbstractDataTransferor)5  markAsWritten worked");
     }
 
     private int getLastNumber(String sheetName) {
-        Log.info("(AbstractDataTransferor) 6 are gonna getLastNumber");
-        ValueRange numerationRageResponse;
-        String rangeOfSheet = sheetName + H1_H_RANGE;
+        final ValueRange numerationRageResponseH1H;
+        String h1HRangeOfSheet = sheetName + H1_H_RANGE;
         try {
-            numerationRageResponse = getService().spreadsheets().values()
-                    .get(spreadsheetId, rangeOfSheet)
+            numerationRageResponseH1H = getService().spreadsheets().values()
+                    .get(spreadsheetId, h1HRangeOfSheet)
                     .execute();
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(null, """
-                    Произошла ошибка.
-                    Неверно указан МЕСЯЦ
-                    или
-                    названия столбцов таблицы в google списке заполнены неверно.
-                    """);
+            JOptionPane.showMessageDialog(null, DialogPaneMessage.WRONG_MONTH_ERROR);
+            Log.info("(AbstractDataTransferor) 4. Last Number was gonna be got, but the Exception was thrown " + e.getMessage());
             throw new RuntimeException(e);
         }
-        List<List<Object>> numerationRowsList = numerationRageResponse.getValues();
-        final int numerationRowsListSize = numerationRowsList.size();
-        EMPTY_ROW_NUMBER = String.format(sheetName + "!" + "A%s", numerationRowsListSize + 1);
-        String numberSign = (String) numerationRowsList.get(numerationRowsListSize - 1).get(0);
-        if (Objects.equals(numberSign, "№")) {
+        List<List<Object>> numerationRowsListH1H = numerationRageResponseH1H.getValues();
+        final int numerationRowsListH1HSize = numerationRowsListH1H.size();
+        EMPTY_ROW_NUMBER_COORDINATES = String.format(sheetName + "!" + "A%s", numerationRowsListH1HSize + 1);
+        String numberOfSell = (String) numerationRowsListH1H.get(numerationRowsListH1HSize - 1).get(0);
+        if (isListEmpty(numberOfSell)) {
             return 0;
         } else {
-            List<Object> lastRowList = numerationRowsList.get(numerationRowsList.size() - 1);
+            List<Object> lastRowList = numerationRowsListH1H.get(numerationRowsListH1H.size() - 1);
             Object lastCellValue = lastRowList.get(0);
             return Integer.parseInt(String.valueOf(lastCellValue));
         }
     }
 
+    private boolean isListEmpty(String numberOfSell) {
+        return Objects.equals(numberOfSell, "№");
+    }
+
+    private int getNextNumber(String sheetName) {
+        return getLastNumber(sheetName) + 1;
+    }
+
     private void update(ValueRange body) {
-        Log.info("(AbstractDataTransferor)7  are gonna update");
         try {
             getService().spreadsheets().values()
-                    .update(spreadsheetId, EMPTY_ROW_NUMBER, body)
+                    .update(spreadsheetId, EMPTY_ROW_NUMBER_COORDINATES, body)
                     .setValueInputOption("RAW")
                     .execute();
         } catch (IOException e) {
+            Log.info("(AbstractDataTransferor) 5. Spreadsheet was gonna be updated, but the Exception was thrown " + e.getMessage());
             throw new RuntimeException(e);
         }
-        Log.info("(AbstractDataTransferor)  8 updated");
     }
 
     private static Sheets getService() throws IOException {
-        Log.info("(AbstractDataTransferor) 9 are gonna get Sheets (method getService");
         return new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials())
                 .setApplicationName(APPLICATION_NAME)
                 .build();
     }
 
-    private static Credential getCredentials()
-            throws IOException {
-        Log.info("(AbstractDataTransferor) 10 are gonna get Credential");
+    private static Credential getCredentials() throws IOException {
         InputStream in = Main.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
         if (in == null) {
+            Log.info("(AbstractDataTransferor) 5. Resource not found: " + CREDENTIALS_FILE_PATH);
             throw new FileNotFoundException("Resource not found: " + CREDENTIALS_FILE_PATH);
         }
         GoogleClientSecrets clientSecrets =
@@ -143,7 +141,6 @@ public abstract class AbstractDataTransferor {
                 .setAccessType("offline")
                 .build();
         LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
-        Log.info("(AbstractDataTransferor) 11 are gonna return Credential (line before return");
         return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
     }
 }

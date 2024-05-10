@@ -1,4 +1,4 @@
-package org.example.resources;
+package org.example.project_constants;
 
 import org.example.config.Config;
 

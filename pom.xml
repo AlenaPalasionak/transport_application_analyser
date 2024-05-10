@@ -71,7 +71,6 @@
             <scope>test</scope>
         </dependency>
 
-
     </dependencies>
 
     <properties>
@@ -79,5 +78,6 @@
         <maven.compiler.target>19</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
 
 </project>

@@ -4,7 +4,7 @@ import org.example.core.AbstractDataTransferor;
 import org.example.core.CompanyDataTransferor;
 import org.example.core.EntrepreneurDataTransferor;
 import org.example.util.logger.Log;
-//import org.example.util.logger.Log;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -19,7 +19,7 @@ public class AppWindow extends JFrame {
     private AbstractDataTransferor dataTransferor;
 
     public AppWindow() throws HeadlessException {
-        super("\"Заполните данные\"");
+        super("\"Автоматизация записи перевозок\"");
         this.setSize(300, 300);
         this.setLocation(900, 200);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -42,7 +42,6 @@ public class AppWindow extends JFrame {
         ButtonEventManager eventListener = new ButtonEventManager("Запущен процесс создание списка.");
         sendButton.addActionListener(eventListener);
         Log.info("(AppWindow) 1. AppWindow is created");
-        Log.info("(AppWindow) 2. ButtonEventManager is created");
     }
 
     class ButtonEventManager implements ActionListener {
@@ -53,26 +52,16 @@ public class AppWindow extends JFrame {
         }
 
         public void actionPerformed(ActionEvent e) {
-            Log.info("(AppWindow) 3. method actionPerformed is invoked");
-            Log.info("(AppWindow) 4. JOptionPane is gonna be shown");
-
             JOptionPane.showMessageDialog(null, message
                     , "Output", JOptionPane.PLAIN_MESSAGE);
             if (entrepreneurButton.isSelected()) {
-                Log.info("(AppWindow) 5. EntrepreneurDataTransferor is gonna be created");
-
                 dataTransferor = new EntrepreneurDataTransferor();
-                Log.info("(AppWindow) 5. EntrepreneurDataTransferor created. EntrepreneurDataTransferor = null(" + dataTransferor.equals(null)+")");
-
             }
             if (companyButton.isSelected()) {
-                Log.info("(AppWindow) 5. CompanyDataTransferor is gonna be created");
-
                 dataTransferor = new CompanyDataTransferor();
             }
             String sheetName = (String) comboBox.getSelectedItem();
-            Log.info("(AppWindow) 2. Are gonna invoke method addValueToSheet");
-            dataTransferor.addValueToSheet(sheetName);
+            dataTransferor.addValueToSpreadSheets(sheetName);
         }
     }
 }

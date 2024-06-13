@@ -57,7 +57,7 @@ public abstract class AbstractDataTransferor {
     }
 
     public void addValueToSpreadSheets(String sheetName) {
-        Log.info("(AbstractDataTransferor) 3. Values are gonna be added to Sheet" + sheetName
+        Log.info("(AbstractDataTransferor) 3. Values are gonna be added to Sheet " + sheetName
                 + ". Storage directory is gonna be opened in case it exists ");
         List<Transportation> transportationList = FileHandler.getNewTransportationsList(storageDir);
         for (Transportation tr : transportationList) {

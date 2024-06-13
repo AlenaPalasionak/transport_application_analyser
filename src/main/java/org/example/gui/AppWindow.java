@@ -56,11 +56,14 @@ public class AppWindow extends JFrame {
                     , "Output", JOptionPane.PLAIN_MESSAGE);
             if (entrepreneurButton.isSelected()) {
                 dataTransferor = new EntrepreneurDataTransferor();
+                Log.info("(AppWindow) 2. Entrepreneur button is pressed");
             }
             if (companyButton.isSelected()) {
                 dataTransferor = new CompanyDataTransferor();
+                Log.info("(AppWindow) 3. Company button is pressed");
             }
             String sheetName = (String) comboBox.getSelectedItem();
+            Log.info("(AppWindow) 4. Method addValueToSpreadSheets(" + sheetName + ") is gonna be invoked on the object of the class " + dataTransferor.getClass());
             dataTransferor.addValueToSpreadSheets(sheetName);
         }
     }

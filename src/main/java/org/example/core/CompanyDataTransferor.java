@@ -8,6 +8,6 @@ public class CompanyDataTransferor extends AbstractDataTransferor {
 
     public CompanyDataTransferor() {
         super(new File(Config.getProperties().getProperty("company.dir"))
-                , (Config.getProperties().getProperty("company_spreadsheetId")));
+                , Config.getProperties().getProperty("company_spreadsheetId"));
     }
 }

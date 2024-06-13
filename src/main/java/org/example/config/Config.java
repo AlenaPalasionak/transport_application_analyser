@@ -13,16 +13,19 @@ public class Config {
     public static Properties getProperties() {
         Reader reader;
         if (PROPERTIES.isEmpty()) {
-            Log.info("(Config) 1. try to load PROPERTIES");
             String fileName = "file.properties";
+            Log.info("(Config) 1. try to load PROPERTIES (properties file name is " + fileName + ")");
             try (InputStream inputStream = Config.class.getClassLoader().getResourceAsStream(fileName)) {
                 reader = new InputStreamReader(Objects.requireNonNull(inputStream), StandardCharsets.UTF_8);
                 PROPERTIES.load(reader);
+
             } catch (IOException e) {
                 Log.info("(Config) 2. Exception while getting properties object" + e);
                 throw new RuntimeException("Invalid config file");
             }
         }
+        Log.info("(Config) 3. Properties:  " + PROPERTIES.toString());
+
         return PROPERTIES;
     }
 }
